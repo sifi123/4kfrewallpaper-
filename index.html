@@ -83,11 +83,6 @@
             transform: scale(1.05);
         }
 
-        .ad-banner {
-            margin: 20px;
-            text-align: center;
-        }
-
         .wallpaper-grid {
             padding: 20px;
             display: grid;
@@ -148,6 +143,86 @@
             box-shadow: 0 4px 15px rgba(255,107,107,0.4);
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .modal-img {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .modal-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .download-modal-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid #ff6b6b;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .stats {
             position: absolute;
             top: 10px;
@@ -156,6 +231,36 @@
             padding: 5px 10px;
             border-radius: 15px;
             font-size: 10px;
+        }
+
+        .loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 16px;
+            color: white;
         }
 
         @media (max-width: 768px) {
@@ -170,49 +275,284 @@
     </style>
 </head>
 <body>
-
     <div class="header">
         <h1>🌟 4K Wallpapers HD 🌟</h1>
     </div>
 
     <div class="search-container">
-        <input type="text" class="search-box" placeholder="Search wallpapers...">
+        <input type="text" class="search-box" placeholder="Search wallpapers..." id="searchInput">
     </div>
 
     <div class="categories">
         <div class="category-tabs">
-            <button class="category-tab active">All</button>
-            <button class="category-tab">Nature</button>
-            <button class="category-tab">Cars</button>
-            <button class="category-tab">Space</button>
-            <button class="category-tab">Anime</button>
-            <button class="category-tab">Minimal</button>
-            <button class="category-tab">Dark</button>
+            <button class="category-tab active" data-category="all">All</button>
+            <button class="category-tab" data-category="nature">Nature</button>
+            <button class="category-tab" data-category="abstract">Abstract</button>
+            <button class="category-tab" data-category="cars">Cars</button>
+            <button class="category-tab" data-category="space">Space</button>
+            <button class="category-tab" data-category="anime">Anime</button>
+            <button class="category-tab" data-category="minimal">Minimal</button>
+            <button class="category-tab" data-category="dark">Dark</button>
         </div>
     </div>
 
-    <!-- 🟢 Custom ouo.io Ad Link -->
-    <div class="ad-banner">
-        <a href="https://ouo.io/AvZkII" target="_blank" style="text-decoration: none;">
-            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; border: 2px dashed rgba(255,255,255,0.3); color: white;">
-                🔗 Click here to continue to your download
-            </div>
-        </a>
+    <div class="wallpaper-grid" id="wallpaperGrid">
+        <div class="loading">
+            <div class="spinner"></div>
+            Loading amazing 4K wallpapers...
+        </div>
     </div>
 
-    <div class="wallpaper-grid">
-        <!-- Wallpaper examples -->
-        <div class="wallpaper-item">
-            <img class="wallpaper-img" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=700&fit=crop" alt="Wallpaper">
-            <div class="stats">2,543 downloads</div>
-            <div class="wallpaper-overlay">
-                <div style="margin-bottom: 10px; font-size: 14px; font-weight: bold;">Mountain Sunset</div>
-                <button class="download-btn" onclick="window.open('https://ouo.io/AvZkII','_blank')">📱 Download 4K</button>
+    <!-- Modal for full view -->
+    <div class="modal" id="wallpaperModal">
+        <div class="modal-content">
+            <img class="modal-img" id="modalImg" src="" alt="">
+            <div class="stats" id="modalStats">4K • 2160x3840</div>
+            <div class="modal-controls">
+                <button class="modal-btn download-modal-btn" id="downloadModalBtn">📱 Download 4K</button>
+                <button class="modal-btn close-btn" id="closeModal">✕ Close</button>
             </div>
         </div>
-
-        <!-- Add more wallpaper items as needed -->
     </div>
 
+    <!-- Loading Modal -->
+    <div class="loading-modal" id="loadingModal">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Preparing your download...</div>
+        </div>
+    </div>
+
+    <script>
+        // App Configuration with OUO.io
+        const APP_CONFIG = {
+            ouoBaseUrl: 'https://ouo.io/qs/',
+            ouoApiKey: 'AvZkII'
+        };
+
+        // Sample wallpaper data with different categories
+        const wallpapers = [
+            // Nature Category
+            { id: 1, category: 'nature', title: 'Mountain Sunset', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=700&fit=crop', downloads: 2543 },
+            { id: 2, category: 'nature', title: 'Ocean Wave', url: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=700&fit=crop', downloads: 1876 },
+            { id: 3, category: 'nature', title: 'Forest Path', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=700&fit=crop', downloads: 3421 },
+            { id: 4, category: 'nature', title: 'Desert Dunes', url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=400&h=700&fit=crop', downloads: 1654 },
+            
+            // Abstract Category
+            { id: 5, category: 'abstract', title: 'Neon Waves', url: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=700&fit=crop', downloads: 4532 },
+            { id: 6, category: 'abstract', title: 'Geometric Art', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=400&h=700&fit=crop', downloads: 2987 },
+            { id: 7, category: 'abstract', title: 'Color Splash', url: 'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=400&h=700&fit=crop', downloads: 3765 },
+            
+            // Cars Category
+            { id: 8, category: 'cars', title: 'Sports Car', url: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=700&fit=crop', downloads: 5432 },
+            { id: 9, category: 'cars', title: 'Classic Car', url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=700&fit=crop', downloads: 2109 },
+            { id: 10, category: 'cars', title: 'Racing Car', url: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&h=700&fit=crop', downloads: 3876 },
+            
+            // Space Category
+            { id: 11, category: 'space', title: 'Galaxy', url: 'https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400&h=700&fit=crop', downloads: 6543 },
+            { id: 12, category: 'space', title: 'Nebula', url: 'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=400&h=700&fit=crop', downloads: 4321 },
+            { id: 13, category: 'space', title: 'Earth from Space', url: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=400&h=700&fit=crop', downloads: 7890 },
+            
+            // Anime Category
+            { id: 14, category: 'anime', title: 'Anime Girl', url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=700&fit=crop', downloads: 8765 },
+            { id: 15, category: 'anime', title: 'Anime Landscape', url: 'https://images.unsplash.com/photo-1617791160588-241658c0f566?w=400&h=700&fit=crop', downloads: 5432 },
+            
+            // Minimal Category
+            { id: 16, category: 'minimal', title: 'Simple Lines', url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=700&fit=crop', downloads: 3210 },
+            { id: 17, category: 'minimal', title: 'Clean Design', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=700&fit=crop', downloads: 2876 },
+            
+            // Dark Category
+            { id: 18, category: 'dark', title: 'Dark Abstract', url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=700&fit=crop', downloads: 4567 },
+            { id: 19, category: 'dark', title: 'Black Texture', url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=700&fit=crop', downloads: 3456 }
+        ];
+
+        let currentCategory = 'all';
+        let currentWallpapers = [...wallpapers];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWallpapers();
+            setupEventListeners();
+        });
+
+        // Load and display wallpapers
+        function loadWallpapers() {
+            const grid = document.getElementById('wallpaperGrid');
+            
+            setTimeout(() => {
+                grid.innerHTML = '';
+                
+                currentWallpapers.forEach(wallpaper => {
+                    const wallpaperElement = createWallpaperElement(wallpaper);
+                    grid.appendChild(wallpaperElement);
+                });
+            }, 500);
+        }
+
+        // Create wallpaper element
+        function createWallpaperElement(wallpaper) {
+            const div = document.createElement('div');
+            div.className = 'wallpaper-item';
+            div.innerHTML = `
+                <img class="wallpaper-img" src="${wallpaper.url}" alt="${wallpaper.title}" loading="lazy">
+                <div class="stats">${wallpaper.downloads.toLocaleString()} downloads</div>
+                <div class="wallpaper-overlay">
+                    <div style="margin-bottom: 10px; font-size: 14px; font-weight: bold;">${wallpaper.title}</div>
+                    <button class="download-btn" onclick="downloadWallpaper(${wallpaper.id})">📱 Download 4K</button>
+                </div>
+            `;
+            
+            div.addEventListener('click', () => openModal(wallpaper));
+            return div;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Category tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentCategory = e.target.dataset.category;
+                    filterWallpapers();
+                });
+            });
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                filterWallpapers(query);
+            });
+
+            // Modal events
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('downloadModalBtn').addEventListener('click', () => {
+                const modalImg = document.getElementById('modalImg');
+                const wallpaper = currentWallpapers.find(w => modalImg.src.includes(w.url.split('?')[0].split('/').pop()));
+                if (wallpaper) {
+                    downloadWallpaper(wallpaper.id);
+                }
+            });
+
+            // Close modal on backdrop click
+            document.getElementById('wallpaperModal').addEventListener('click', (e) => {
+                if (e.target.id === 'wallpaperModal') {
+                    closeModal();
+                }
+            });
+        }
+
+        // Filter wallpapers by category and search
+        function filterWallpapers(searchQuery = '') {
+            currentWallpapers = wallpapers.filter(wallpaper => {
+                const matchesCategory = currentCategory === 'all' || wallpaper.category === currentCategory;
+                const matchesSearch = wallpaper.title.toLowerCase().includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+            
+            loadWallpapers();
+        }
+
+        // Open modal
+        function openModal(wallpaper) {
+            const modal = document.getElementById('wallpaperModal');
+            const modalImg = document.getElementById('modalImg');
+            const modalStats = document.getElementById('modalStats');
+            
+            modalImg.src = wallpaper.url.replace('w=400&h=700', 'w=1080&h=1920'); // Higher resolution
+            modalStats.textContent = `4K • ${wallpaper.downloads.toLocaleString()} downloads`;
+            modal.style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('wallpaperModal').style.display = 'none';
+        }
+
+        // Generate OUO.io link
+        function generateOuoLink(originalUrl) {
+            // Encode the original URL
+            const encodedUrl = encodeURIComponent(originalUrl);
+            // Create OUO.io shortened link
+            const ouoLink = `https://ouo.io/${APP_CONFIG.ouoApiKey}?s=${encodedUrl}`;
+            return ouoLink;
+        }
+
+        // Download wallpaper through OUO.io
+        function downloadWallpaper(wallpaperId) {
+            const wallpaper = wallpapers.find(w => w.id === wallpaperId);
+            if (wallpaper) {
+                // Show loading modal
+                showLoadingModal();
+                
+                // Get high resolution image URL
+                const highResUrl = wallpaper.url.replace('w=400&h=700', 'w=1080&h=1920');
+                
+                // Generate OUO.io link
+                const ouoLink = generateOuoLink(highResUrl);
+                
+                // Simulate processing time
+                setTimeout(() => {
+                    hideLoadingModal();
+                    
+                    // Open OUO.io link in new tab
+                    window.open(ouoLink, '_blank');
+                    
+                    // Update download count
+                    wallpaper.downloads += 1;
+                    loadWallpapers();
+                    
+                    // Show success message
+                    showToast('🔗 Download link generated! Complete the verification to download.');
+                }, 2000);
+            }
+        }
+
+        // Show loading modal
+        function showLoadingModal() {
+            document.getElementById('loadingModal').style.display = 'block';
+        }
+
+        // Hide loading modal
+        function hideLoadingModal() {
+            document.getElementById('loadingModal').style.display = 'none';
+        }
+
+        // Show toast message
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                z-index: 10000;
+                font-size: 14px;
+                backdrop-filter: blur(10px);
+                max-width: 90%;
+                text-align: center;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        // Add some scroll effects
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(0,0,0,0.6)';
+            } else {
+                header.style.background = 'rgba(0,0,0,0.3)';
+            }
+        });
+    </script>
 </body>
 </html>
